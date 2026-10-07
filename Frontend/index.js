@@ -494,7 +494,7 @@ function findNearbyPlaces() {
   navigator.geolocation.getCurrentPosition(async position => {
     nearbyStatus.textContent = text('nearbyLoading');
     try {
-      const response = await fetch('http://127.0.0.1:5000/nearby-places', {
+      const response = await fetch(NEARBY_PLACES_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -593,9 +593,11 @@ voiceButtons.forEach(btn => {
 
 // Generate Audio guide button Logic
 
-const GENERATE_AUDIO_GUIDE_API_URL = "http://127.0.0.1:5000/generate-audio-guide";
-const ASK_GUIDE_API_URL = "http://127.0.0.1:5000/ask-guide";
-const IDENTIFY_PLACE_API_URL = "http://127.0.0.1:5000/identify-place";
+const API_BASE_URL = (window.TRAVEL_GUIDE_API_URL || '').replace(/\/$/, '');
+const GENERATE_AUDIO_GUIDE_API_URL = `${API_BASE_URL}/generate-audio-guide`;
+const ASK_GUIDE_API_URL = `${API_BASE_URL}/ask-guide`;
+const IDENTIFY_PLACE_API_URL = `${API_BASE_URL}/identify-place`;
+const NEARBY_PLACES_API_URL = `${API_BASE_URL}/nearby-places`;
 
 generateButton.addEventListener('click', async () => {
   generateButton.disabled = true;

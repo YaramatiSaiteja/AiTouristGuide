@@ -52,6 +52,10 @@ app = Flask(__name__)
 CORS(app)
 client = genai.Client(api_key=GEMINI_API_KEY)
 
+@app.get("/health")
+def health():
+    return jsonify({"status": "ok"})
+
 PROMPTS = {
     "Summary": """
     Act as a friendly, knowledgeable tourist guide.
@@ -291,4 +295,9 @@ def nearby_places():
 
     return jsonify({"language": language, "places": places})
 
-app.run(host="127.0.0.1", port=5000, debug=False)
+if __name__ == "__main__":
+    app.run(
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", "5000")),
+        debug=False
+    )
