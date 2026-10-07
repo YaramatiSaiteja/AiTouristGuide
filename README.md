@@ -17,7 +17,7 @@ User
   ↓
 React + Vite Frontend
   ↓
-Python + FastAPI Backend
+Python + Flask Backend
   ↓
 Google Gemini API
   ↓
