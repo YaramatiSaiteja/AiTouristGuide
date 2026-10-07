@@ -31,7 +31,7 @@ Voice Output
 ## 🛠️ Tech Stack
 
 **Frontend:** React, Vite, Bootstrap  
-**Backend:** Python, FastAPI  
+**Backend:** Python, Flask
 **AI:** Google Gemini API  
 **Text-to-Speech:** Murf AI API
 
