@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Guide</title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    audio::-webkit-media-controls-panel {
+      background-color: #f9fafb;
+    }
+
+    .place-card {
+      transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+      transform: translateZ(0);
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
+      max-width: 340px;
+    }
+
+    .cards-grid.faded {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      padding-top: 12px;
+    }
+
+    .cards-grid.faded .place-card {
+      display: none;
+    }
+
+    .cards-grid.faded .place-card.active {
+      display: block;
+      width: 100%;
+      max-width: 360px;
+      cursor: default;
+      animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    #experience {
+      transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    #experience.hidden {
+      display: none;
+    }
+
+    #experience:not(.visible) {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    #experience.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .sidebar-link.active {
+      background: #fff1e5;
+      color: #ff6a00;
+    }
+
+    #sidebar,
+    #topbar,
+    #app-main {
+      transition: width 0.25s ease, left 0.25s ease, margin-left 0.25s ease;
+    }
+
+    body.nav-collapsed #sidebar {
+      width: 4rem;
+    }
+
+    body.nav-collapsed #topbar {
+      left: 4rem;
+      width: calc(100% - 4rem);
+    }
+
+    body.nav-collapsed #app-main {
+      margin-left: 4rem;
+    }
+
+    body.nav-collapsed #sidebar .brand-copy,
+    body.nav-collapsed #sidebar .nav-label,
+    body.nav-collapsed #sidebar .language-label {
+      display: none;
+    }
+
+    body.nav-collapsed #sidebar .sidebar-link {
+      justify-content: center;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen text-gray-800 bg-[#fdfbf7] font-sans selection:bg-[#ff8a1f] selection:text-white">
+
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] block w-16 border-r border-gray-100 bg-white p-2 lg:w-64 lg:p-5">
+    <div class="flex items-center justify-center gap-3 px-0 py-2 lg:justify-start lg:px-2">
+      <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#ff8a1f] to-[#ff6a00] shadow-lg shadow-orange-200">
+        <img src="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat-course-projects/compass-removebg-preview.png" alt="logo" class="h-6 w-6 object-contain">
+      </div>
+      <div class="brand-copy hidden lg:block">
+        <div class="font-bold tracking-tight text-gray-900">Travel Guide</div>
+        <div class="mt-1 text-[11px] font-medium tracking-wide text-gray-500">AI Travel Companion</div>
+      </div>
+    </div>
+    <nav class="mt-10 space-y-2" aria-label="Main navigation">
+      <button title="Explore Places" data-i18n-title="explorePlaces" class="sidebar-link active flex w-full items-center justify-center gap-3 rounded-xl px-2 py-3 text-left text-sm font-semibold text-gray-700 transition hover:bg-orange-50 lg:justify-start lg:px-4" data-view-target="exploreView">🧭 <span class="nav-label hidden lg:inline" data-i18n="explorePlaces">Explore Places</span></button>
+      <button title="Ask the Guide" data-i18n-title="askGuide" class="sidebar-link flex w-full items-center justify-center gap-3 rounded-xl px-2 py-3 text-left text-sm font-semibold text-gray-700 transition hover:bg-orange-50 lg:justify-start lg:px-4" data-view-target="askView">💬 <span class="nav-label hidden lg:inline" data-i18n="askGuide">Ask the Guide</span></button>
+      <button title="Identify & Explain" data-i18n-title="identifyExplain" class="sidebar-link flex w-full items-center justify-center gap-3 rounded-xl px-2 py-3 text-left text-sm font-semibold text-gray-700 transition hover:bg-orange-50 lg:justify-start lg:px-4" data-view-target="identifyView">📸 <span class="nav-label hidden lg:inline" data-i18n="identifyExplain">Identify & Explain</span></button>
+      <button title="Nearby Places" data-i18n-title="nearbyPlaces" class="sidebar-link flex w-full items-center justify-center gap-3 rounded-xl px-2 py-3 text-left text-sm font-semibold text-gray-700 transition hover:bg-orange-50 lg:justify-start lg:px-4" data-view-target="nearbyView">📍 <span class="nav-label hidden lg:inline" data-i18n="nearbyPlaces">Nearby Places</span></button>
+    </nav>
+    <div class="mt-10 border-t border-gray-100 pt-6">
+      <label for="appLanguageSelect" data-i18n="language" class="language-label mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400 lg:px-2">Language</label>
+      <select id="appLanguageSelect" class="w-full rounded-xl border border-gray-200 bg-white px-2 py-2.5 text-xs font-semibold text-gray-700 focus:border-[#ff8a1f] focus:outline-none lg:px-3">
+        <option value="English">English</option>
+        <option value="Hindi">हिन्दी</option>
+        <option value="Telugu">తెలుగు</option>
+        <option value="Tamil">தமிழ்</option>
+      </select>
+    </div>
+  </aside>
+
+  <header
+    id="topbar"
+    class="fixed top-0 left-16 z-50 w-[calc(100%-4rem)] border-b border-gray-100 bg-white/80 shadow-sm backdrop-blur-md transition-all lg:left-64 lg:w-[calc(100%-16rem)]">
+    <div class="flex h-20 w-full items-center justify-between gap-4 px-6">
+      <button id="navToggle" type="button" aria-label="Collapse navigation" aria-expanded="true"
+        class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-lg text-gray-700 transition hover:border-[#ff8a1f] hover:text-[#ff6a00]">☰</button>
+      <div class="flex max-w-lg flex-1 items-center justify-end gap-2">
+        <div class="relative w-full max-w-[320px] group">
+          <input id="searchInput" data-i18n-placeholder="searchDestination" placeholder="Search destination..."
+            class="w-full pl-5 pr-12 py-2.5 rounded-full border border-gray-200 bg-gray-50/50 text-sm font-medium focus:bg-white focus:outline-none focus:border-[#ff8a1f] focus:ring-4 focus:ring-orange-50 transition-all duration-300 placeholder-gray-400 group-hover:bg-white group-hover:shadow-sm">
+          <div class="absolute right-4 top-2.5 text-gray-400 pointer-events-none"><svg class="w-5 h-5" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg></div>
+        </div>
+        <button id="searchBtn"
+          data-i18n="explore" class="hidden sm:block px-6 py-2.5 rounded-full bg-gray-900 text-white font-semibold text-sm hover:bg-[#ff8a1f] hover:shadow-lg hover:shadow-orange-200 active:scale-95 transition-all duration-300">Explore</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="app-main" class="ml-16 lg:ml-64">
+  <section id="identifyView" class="app-view hidden px-6 pt-28">
+    <div class="mx-auto max-w-3xl">
+      <div class="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm">
+        <div class="flex items-start gap-4">
+          <div class="text-2xl">📸</div>
+          <div>
+            <h2 data-i18n="identifyExplain" class="font-['Playfair_Display',_serif] text-2xl font-bold text-gray-900">Identify & Explain</h2>
+            <p data-i18n="identifyDescription" class="mt-1 text-sm text-gray-500">Upload a landmark photo and let AI explain what you are seeing.</p>
+          </div>
+        </div>
+        <form id="photoForm" class="mt-5 flex flex-col sm:flex-row gap-3">
+          <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp"
+            class="min-w-0 flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-50 file:px-3 file:py-2 file:font-semibold file:text-[#ff6a00]">
+          <button id="identifyBtn" type="submit"
+            data-i18n="identifyExplain" class="rounded-xl bg-gray-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-[#ff8a1f] disabled:cursor-not-allowed disabled:opacity-60">Identify & Explain</button>
+        </form>
+        <p id="identificationResult" class="hidden mt-5 rounded-xl bg-orange-50 p-4 text-sm leading-6 text-gray-700"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="askView" class="app-view hidden px-6 pt-28">
+    <div class="mx-auto max-w-3xl">
+      <div class="rounded-[2rem] border border-gray-100 bg-white p-8 shadow-sm">
+        <span data-i18n="askGuide" class="rounded-md bg-orange-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-[#ff8a1f]">Ask the Guide</span>
+        <h2 data-i18n="questionPrompt" class="mt-3 font-['Playfair_Display',_serif] text-3xl font-bold text-gray-900">Have a question about this place?</h2>
+        <p id="askGuideContext" data-i18n="askGuideContext" class="mt-2 text-sm text-gray-500">Choose a place or generate a guide from Explore Places first, then ask a follow-up question here.</p>
+        <form id="askGuideForm" class="mt-6">
+          <input id="guidePlace" data-i18n-placeholder="placePlaceholder" type="text" required placeholder="Which place is your question about?"
+            class="mb-3 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-[#ff8a1f] focus:outline-none">
+          <div class="flex gap-2">
+            <input id="guideQuestion" data-i18n-placeholder="questionPlaceholder" type="text" required placeholder="Why was this temple built?"
+              class="min-w-0 flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-[#ff8a1f] focus:outline-none">
+            <button id="askGuideBtn" data-i18n="askGuide" type="submit" class="rounded-xl bg-gray-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-[#ff8a1f] disabled:cursor-not-allowed disabled:opacity-60">Ask the Guide</button>
+          </div>
+          <p id="guideAnswer" class="hidden mt-4 rounded-xl bg-gray-50 p-4 text-sm leading-6 text-gray-700"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="nearbyView" class="app-view hidden px-6 pt-28">
+    <div class="mx-auto max-w-6xl">
+      <div class="rounded-[2rem] border border-gray-100 bg-white p-8 shadow-sm">
+        <span data-i18n="nearbyPlaces" class="rounded-md bg-orange-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-[#ff8a1f]">Nearby Places</span>
+        <h2 data-i18n="nearbyTitle" class="mt-3 font-['Playfair_Display',_serif] text-3xl font-bold text-gray-900">Discover places near you</h2>
+        <p data-i18n="nearbyDescription" class="mt-2 text-sm text-gray-500">Allow location access to find tourist attractions nearby.</p>
+        <button id="nearbySearchBtn" data-i18n="findNearby" type="button" class="mt-6 rounded-xl bg-gray-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-[#ff8a1f] disabled:cursor-not-allowed disabled:opacity-60">Find Nearby Places</button>
+        <p id="nearbyStatus" class="mt-4 hidden text-sm text-gray-600"></p>
+      </div>
+      <div id="nearbyCards" class="mt-8 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3"></div>
+    </div>
+  </section>
+
+  <section id="exploreView" class="app-view pt-32 px-6 pb-20">
+    <div class="max-w-7xl mx-auto">
+
+      <div id="desktopBackContainer" class="hidden w-full mx-auto mb-6 pl-1"></div>
+
+      <div
+        class="cards cards-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 w-full mx-auto min-h-[600px] relative
+                lg:[&.faded]:flex-row lg:[&.faded]:items-start lg:[&.faded]:justify-center lg:[&.faded]:gap-[60px] lg:[&.faded]:pt-10">
+
+        <div data-card-key="tajMahal" class="place-card bg-white rounded-[2rem] overflow-hidden border border-gray-100 cursor-pointer hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] hover:border-orange-100 group relative
+                  lg:[&.active]:w-[480px] lg:[&.active]:max-w-none" data-place="Taj Mahal"
+          data-image="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat-course-projects/Taj_Mahal_%28Edited%29.jpeg">
+          <div class="overflow-hidden h-[200px] relative">
+            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 z-10">
+            </div>
+            <img src="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat-course-projects/Taj_Mahal_%28Edited%29.jpeg" alt="Taj Mahal"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+            <div
+              class="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase text-gray-800 shadow-sm">
+              Agra</div>
+          </div>
+          <div class="p-6">
+            <span class="text-[11px] text-[#ff8a1f] font-bold uppercase tracking-widest">World Wonder</span>
+            <h3
+              class="mt-2 mb-1 text-xl font-['Playfair_Display',_serif] font-bold text-gray-900 group-hover:text-[#ff8a1f] transition-colors">
+              Taj Mahal</h3>
+            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">An immense mausoleum of white marble, built in
+              Agra between 1631 and 1648.</p>
+          </div>
+        </div>
+
+        <div data-card-key="redFort" class="place-card bg-white rounded-[2rem] overflow-hidden border border-gray-100 cursor-pointer hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] hover:border-orange-100 group relative
+                  lg:[&.active]:w-[480px] lg:[&.active]:max-w-none" data-place="Red Fort"
+          data-image="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat-course-projects/Delhi_fort.jpg">
+          <div class="overflow-hidden h-[200px] relative">
+            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 z-10">
+            </div>
+            <img src="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat-course-projects/Delhi_fort.jpg" alt="Red Fort"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+            <div
+              class="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase text-gray-800 shadow-sm">
+              New Delhi</div>
+          </div>
+          <div class="p-6">
+            <span class="text-[11px] text-[#ff8a1f] font-bold uppercase tracking-widest">Historical Fort</span>
+            <h3
+              class="mt-2 mb-1 text-xl font-['Playfair_Display',_serif] font-bold text-gray-900 group-hover:text-[#ff8a1f] transition-colors">
+              Red Fort</h3>
+            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">A historic fort in the city of Delhi in India
+              that served as the main residence of the Mughal Emperors.</p>
+          </div>
+        </div>
+
+        <div data-card-key="gatewayOfIndia" class="place-card bg-white rounded-[2rem] overflow-hidden border border-gray-100 cursor-pointer hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] hover:border-orange-100 group relative
+                  lg:[&.active]:w-[480px] lg:[&.active]:max-w-none" data-place="Gateway of India"
+          data-image="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat-course-projects/Mumbai_03-2016_30_Gateway_of_India.jpg">
+          <div class="overflow-hidden h-[200px] relative">
+            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 z-10">
+            </div>
+            <img src="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat-course-projects/Mumbai_03-2016_30_Gateway_of_India.jpg"
+              alt="Gateway of India"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+            <div
+              class="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase text-gray-800 shadow-sm">
+              Mumbai</div>
+          </div>
+          <div class="p-6">
+            <span class="text-[11px] text-[#ff8a1f] font-bold uppercase tracking-widest">Monument</span>
+            <h3
+              class="mt-2 mb-1 text-xl font-['Playfair_Display',_serif] font-bold text-gray-900 group-hover:text-[#ff8a1f] transition-colors">
+              Gateway of India</h3>
+            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">An arch-monument built during the 20th century
+              in Bombay, India.</p>
+          </div>
+        </div>
+
+        <div data-card-key="hawaMahal" class="place-card bg-white rounded-[2rem] overflow-hidden border border-gray-100 cursor-pointer hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] hover:border-orange-100 group relative
+                  lg:[&.active]:w-[480px] lg:[&.active]:max-w-none" data-place="Hawa Mahal"
+          data-image="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat-course-projects/East_facade_Hawa_Mahal_Jaipur_from_ground_level_%28July_2022%29_-_img_01.jpg">
+          <div class="overflow-hidden h-[200px] relative">
+            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 z-10">
+            </div>
+            <img
+              src="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat-course-projects/East_facade_Hawa_Mahal_Jaipur_from_ground_level_%28July_2022%29_-_img_01.jpg"
+              alt="Hawa Mahal"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+            <div
+              class="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase text-gray-800 shadow-sm">
+              Jaipur</div>
+          </div>
+          <div class="p-6">
+            <span class="text-[11px] text-[#ff8a1f] font-bold uppercase tracking-widest">Architecture</span>
+            <h3
+              class="mt-2 mb-1 text-xl font-['Playfair_Display',_serif] font-bold text-gray-900 group-hover:text-[#ff8a1f] transition-colors">
+              Hawa Mahal</h3>
+            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">The 'Palace of Winds', a palace in Jaipur,
+              India, made with the red and pink sandstone.</p>
+          </div>
+        </div>
+
+        <div data-card-key="goldenTemple" class="place-card bg-white rounded-[2rem] overflow-hidden border border-gray-100 cursor-pointer hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] hover:border-orange-100 group relative
+                  lg:[&.active]:w-[480px] lg:[&.active]:max-w-none" data-place="Golden Temple"
+          data-image="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat-course-projects/The_Golden_Temple_of_Amrithsar_7.jpg">
+          <div class="overflow-hidden h-[200px] relative">
+            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 z-10">
+            </div>
+            <img src="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat-course-projects/The_Golden_Temple_of_Amrithsar_7.jpg"
+              alt="Golden Temple"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+            <div
+              class="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase text-gray-800 shadow-sm">
+              Amritsar</div>
+          </div>
+          <div class="p-6">
+            <span class="text-[11px] text-[#ff8a1f] font-bold uppercase tracking-widest">Spiritual</span>
+            <h3
+              class="mt-2 mb-1 text-xl font-['Playfair_Display',_serif] font-bold text-gray-900 group-hover:text-[#ff8a1f] transition-colors">
+              Golden Temple</h3>
+            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">Also known as Sri Harmandir Sahib, it is the
+              holiest Gurdwara of Sikhism.</p>
+          </div>
+        </div>
+
+        <div data-card-key="mysorePalace" class="place-card bg-white rounded-[2rem] overflow-hidden border border-gray-100 cursor-pointer hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] hover:border-orange-100 group relative
+                  lg:[&.active]:w-[480px] lg:[&.active]:max-w-none" data-place="Mysore Palace"
+          data-image="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat-course-projects/Mysore_Palace_Morning.jpg">
+          <div class="overflow-hidden h-[200px] relative">
+            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 z-10">
+            </div>
+            <img src="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat-course-projects/Mysore_Palace_Morning.jpg" alt="Mysore Palace"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+            <div
+              class="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase text-gray-800 shadow-sm">
+              Mysore</div>
+          </div>
+          <div class="p-6">
+            <span class="text-[11px] text-[#ff8a1f] font-bold uppercase tracking-widest">Royal Palace</span>
+            <h3
+              class="mt-2 mb-1 text-xl font-['Playfair_Display',_serif] font-bold text-gray-900 group-hover:text-[#ff8a1f] transition-colors">
+              Mysore Palace</h3>
+            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">A historical palace and a royal residence at
+              Mysore in the Indian State of Karnataka.</p>
+          </div>
+        </div>
+
+        <div data-card-key="indiaGate" class="place-card bg-white rounded-[2rem] overflow-hidden border border-gray-100 cursor-pointer hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] hover:border-orange-100 group relative
+                  lg:[&.active]:w-[480px] lg:[&.active]:max-w-none" data-place="India Gate"
+          data-image="https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=900&q=80">
+          <div class="overflow-hidden h-[200px] relative">
+            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 z-10"></div>
+            <img src="https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=900&q=80" alt="India Gate"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+            <div class="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase text-gray-800 shadow-sm">New Delhi</div>
+          </div>
+          <div class="p-6">
+            <span class="text-[11px] text-[#ff8a1f] font-bold uppercase tracking-widest">War Memorial</span>
+            <h3 class="mt-2 mb-1 text-xl font-['Playfair_Display',_serif] font-bold text-gray-900 group-hover:text-[#ff8a1f] transition-colors">India Gate</h3>
+            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">A grand archway and national war memorial in the heart of New Delhi.</p>
+          </div>
+        </div>
+
+        <div data-card-key="qutubMinar" class="place-card bg-white rounded-[2rem] overflow-hidden border border-gray-100 cursor-pointer hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] hover:border-orange-100 group relative
+                  lg:[&.active]:w-[480px] lg:[&.active]:max-w-none" data-place="Qutub Minar"
+          data-image="https://images.unsplash.com/photo-1585135497273-1a86b09fe70e?auto=format&fit=crop&w=900&q=80">
+          <div class="overflow-hidden h-[200px] relative">
+            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 z-10"></div>
+            <img src="https://images.unsplash.com/photo-1585135497273-1a86b09fe70e?auto=format&fit=crop&w=900&q=80" alt="Qutub Minar"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+            <div class="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase text-gray-800 shadow-sm">New Delhi</div>
+          </div>
+          <div class="p-6">
+            <span class="text-[11px] text-[#ff8a1f] font-bold uppercase tracking-widest">Historic Monument</span>
+            <h3 class="mt-2 mb-1 text-xl font-['Playfair_Display',_serif] font-bold text-gray-900 group-hover:text-[#ff8a1f] transition-colors">Qutub Minar</h3>
+            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">A UNESCO World Heritage Site and one of Delhi's most iconic landmarks.</p>
+          </div>
+        </div>
+
+        <div data-card-key="charminar" class="place-card bg-white rounded-[2rem] overflow-hidden border border-gray-100 cursor-pointer hover:-translate-y-2 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] hover:border-orange-100 group relative
+                  lg:[&.active]:w-[480px] lg:[&.active]:max-w-none" data-place="Charminar"
+          data-image="https://upload.wikimedia.org/wikipedia/commons/d/d1/Charminar-Pride_of_Hyderabad.jpg">
+          <div class="overflow-hidden h-[200px] relative">
+            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500 z-10"></div>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Charminar-Pride_of_Hyderabad.jpg" alt="Charminar"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+            <div class="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase text-gray-800 shadow-sm">Hyderabad</div>
+          </div>
+          <div class="p-6">
+            <span class="text-[11px] text-[#ff8a1f] font-bold uppercase tracking-widest">Historic Monument</span>
+            <h3 class="mt-2 mb-1 text-xl font-['Playfair_Display',_serif] font-bold text-gray-900 group-hover:text-[#ff8a1f] transition-colors">Charminar</h3>
+            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">A celebrated four-minaret monument and symbol of Hyderabad.</p>
+          </div>
+        </div>
+
+        <div id="searchPreviewCard"
+          class="place-card search-preview-card hidden bg-white rounded-[2rem] overflow-hidden border border-gray-100 cursor-pointer lg:[&.active]:w-[480px] lg:[&.active]:max-w-none">
+          <div class="overflow-hidden h-[200px] relative">
+            <img id="searchPreviewImage" src="" alt="Destination preview" class="w-full h-full object-cover">
+          </div>
+          <div class="p-6">
+            <span data-i18n="searchResult" class="text-[11px] text-[#ff8a1f] font-bold uppercase tracking-widest">Search Result</span>
+            <h3 id="searchPreviewTitle"
+              class="mt-2 mb-1 text-xl font-['Playfair_Display',_serif] font-bold text-gray-900"></h3>
+            <p data-i18n="destinationFound" class="text-sm text-gray-500">Destination found via search.</p>
+          </div>
+        </div>
+
+        <div id="experience" class="hidden w-full max-w-[440px] shrink-0">
+          <div class="flex justify-start mb-6">
+            <button id="closeExperience"
+              class="px-5 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-600 hover:text-[#ff8a1f] hover:border-[#ff8a1f]/30 hover:shadow-sm transition-all flex items-center gap-2 group">
+              <span class="group-hover:-translate-x-0.5 transition-transform">←</span> <span data-i18n="backToPlaces">Back to Places</span>
+            </button>
+          </div>
+
+          <div class="p-8 bg-white border border-gray-100 rounded-[2rem] shadow-2xl shadow-gray-200/50">
+            <div class="border-b border-dashed border-gray-200 mb-6 pb-6">
+              <span
+                class="text-[10px] font-bold uppercase tracking-widest text-[#ff8a1f] bg-orange-50 px-2 py-1 rounded-md"><span data-i18n="ai">AI</span>
+                <span data-i18n="guideReady">Guide Ready</span></span>
+              <h3 id="previewTitle"
+                class="mt-3 text-3xl font-['Playfair_Display',_serif] font-bold text-gray-900 leading-tight"></h3>
+            </div>
+
+            <div class="mb-6">
+              <h4 data-i18n="durationDetail" class="mb-3 text-xs uppercase tracking-widest text-gray-400 font-bold">Duration & Detail</h4>
+              <div class="flex gap-4" data-group="length">
+                <button
+                  class="option active flex-1 p-4 rounded-2xl border border-gray-200 bg-gray-50 text-left cursor-pointer hover:border-[#ff8a1f] transition-all relative overflow-hidden group [&.active]:bg-[#fff1e5] [&.active]:border-[#ff8a1f] [&.active]:shadow-lg [&.active]:shadow-orange-100"
+                  data-value="Summary">
+                  <div class="relative z-10">
+                    <strong data-i18n="summarized" class="block text-sm mb-1 text-gray-900">Summarized</strong>
+                    <span data-i18n="summaryTime" class="text-xs text-gray-500 group-hover:text-[#ff8a1f]/80">~1 min overview</span>
+                  </div>
+                </button>
+                <button
+                  class="option flex-1 p-4 rounded-2xl border border-gray-200 bg-gray-50 text-left cursor-pointer hover:border-[#ff8a1f] transition-all relative overflow-hidden group [&.active]:bg-[#fff1e5] [&.active]:border-[#ff8a1f] [&.active]:shadow-lg [&.active]:shadow-orange-100"
+                  data-value="Balanced">
+                  <div class="relative z-10">
+                    <strong data-i18n="balanced" class="block text-sm mb-1 text-gray-900">Balanced</strong>
+                    <span data-i18n="balancedTime" class="text-xs text-gray-500 group-hover:text-[#ff8a1f]/80">~2 min guide</span>
+                  </div>
+                </button>
+                <button
+                  class="option flex-1 p-4 rounded-2xl border border-gray-200 bg-gray-50 text-left cursor-pointer hover:border-[#ff8a1f] transition-all relative overflow-hidden group [&.active]:bg-[#fff1e5] [&.active]:border-[#ff8a1f] [&.active]:shadow-lg [&.active]:shadow-orange-100"
+                  data-value="Detailed">
+                  <div class="relative z-10">
+                    <strong data-i18n="detailed" class="block text-sm mb-1 text-gray-900">Detailed</strong>
+                    <span data-i18n="detailedTime" class="text-xs text-gray-500 group-hover:text-[#ff8a1f]/80">~3 min guide</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div class="mb-8">
+              <h4 data-i18n="audioSettings" class="mb-3 text-xs uppercase tracking-widest text-gray-400 font-bold">Audio Settings</h4>
+              <div class="flex gap-3">
+                <div class="relative flex-1">
+                  <select id="selectLanguage"
+                    class="w-full appearance-none px-5 py-3.5 rounded-xl border border-gray-200 text-sm font-semibold focus:outline-none focus:border-[#ff8a1f] bg-white text-gray-800 shadow-sm">
+                    <option value="English">English</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Tamil">Tamil</option>
+                    <option value="Telugu">Telugu</option>
+                  </select>
+                  <div class="absolute right-4 top-4 text-gray-400 pointer-events-none text-xs">▼</div>
+                </div>
+                <div
+                  class="flex border border-gray-200 rounded-xl overflow-hidden bg-gray-50 p-1.5 w-[160px] shadow-inner"
+                  data-group="voice">
+                  <button
+                    class="active flex-1 rounded-lg text-xs font-bold text-gray-500 transition-all [&.active]:bg-white [&.active]:text-[#ff8a1f] [&.active]:shadow-sm"
+                    data-value="Male" data-i18n="male">Male</button>
+                  <button
+                    class="flex-1 rounded-lg text-xs font-bold text-gray-500 transition-all [&.active]:bg-white [&.active]:text-[#ff8a1f] [&.active]:shadow-sm"
+                    data-value="Female" data-i18n="female">Female</button>
+                </div>
+              </div>
+            </div>
+
+            <button id="generateBtn"
+              data-i18n="generateAudioGuide" class="w-full py-4 bg-gradient-to-r from-[#ff8a1f] to-[#ff6a00] text-white rounded-xl font-bold text-sm shadow-xl shadow-orange-200 hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-70 disabled:cursor-not-allowed">Generate Audio Guide</button>
+
+            <div id="audioSection" class="hidden mt-8 pt-6 border-t border-gray-100">
+              <div class="mb-5 border border-gray-200 rounded-2xl bg-gray-50 p-4">
+                <div class="flex justify-between items-center cursor-pointer select-none group" id="transcriptToggle">
+                  <span class="text-xs font-bold text-gray-500 group-hover:text-[#ff8a1f] transition-colors tracking-wide uppercase"><span data-i18n="read">Read</span>
+                    <span data-i18n="transcript">Transcript</span></span>
+                  <span class="text-[10px] text-gray-400 transition-transform duration-200"
+                    id="transcriptArrow">▼</span>
+                </div>
+                <div
+                  class="hidden mt-4 max-h-[160px] overflow-y-auto text-sm leading-7 text-gray-600 custom-scroll pr-2"
+                  id="transcriptContent">
+                  <p id="scriptText"></p>
+                </div>
+              </div>
+              <audio id="audioPlayer" controls class="w-full h-11 rounded-lg shadow-sm"></audio>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  </main>
+
+  <script src="index.js"></script>
+</body>
+
+</html>
